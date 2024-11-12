@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <!-- Връзка към Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center">URL Shortener</h1>
+        <p class="text-center">Съкратете дълги URL адреси с един клик!</p>
+
+        <!-- Форма за въвеждане на дълъг URL -->
+        <form id="urlForm" class="d-flex justify-content-center">
+            <div class="input-group mb-3" style="max-width: 600px;">
+                <input type="url" id="longUrl" class="form-control" placeholder="Въведете дълъг URL" required>
+                <button class="btn btn-primary" type="submit">Съкратете</button>
+            </div>
+        </form>
+
+        <!-- Показване на генерираните кратки URL -->
+        <div id="shortUrls" class="mt-4"></div>
+    </div>
+
+    <!-- Връзка към Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Основен JavaScript код -->
+    <script>
+        // Функция за генериране на кратък код на базата на хеш
+        function generateShortCode(longUrl) {
+            return btoa(longUrl).substring(0, 6);  // Кодиране на URL и съкращаване до 6 символа
+        }
+
+        // Функция за показване на всички кратки URL адреси от localStorage
+        function displayShortUrls() {
+            const shortUrlsContainer = document.getElementById('shortUrls');
+            shortUrlsContainer.innerHTML = '';  // Изчистване на контейнера
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const shortCode = localStorage.key(i);
+                const longUrl = localStorage.getItem(shortCode);
+
+                const urlElement = document.createElement('div');
+                urlElement.classList.add('alert', 'alert-secondary');
+                urlElement.innerHTML = `
+                    <p>Дълъг URL: <a href="${longUrl}" target="_blank">${longUrl}</a></p>
+                    <p>Кратък URL: <a href="${window.location.href}#${shortCode}" target="_blank">${window.location.href}#${shortCode}</a></p>
+                `;
+                shortUrlsContainer.appendChild(urlElement);
+            }
+        }
+
+        // Обработване на изпращането на формата за създаване на нов кратък URL адрес
+        document.getElementById('urlForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const longUrl = document.getElementById('longUrl').value;
+            const shortCode = generateShortCode(longUrl);
+
+            // Запазване на дългия URL с кратък код в localStorage
+            localStorage.setItem(shortCode, longUrl);
+
+            // Изчистване на полето за въвеждане и обновяване на списъка с кратки URL адреси
+            document.getElementById('longUrl').value = '';
+            displayShortUrls();
+        });
+
+        // Проверка за наличието на кратък код в URL и пренасочване
+        window.addEventListener('load', function() {
+            const hash = window.location.hash.substring(1);  // Получаване на кратък код от URL
+            if (hash) {
+                const longUrl = localStorage.getItem(hash);
+                if (longUrl) {
+                    window.location.href = longUrl;  // Пренасочване към дългия URL
+                } else {
+                    alert('Кратък URL не е намерен!');
+                }
+            }
+        });
+
+        // Показване на всички кратки URL адреси при зареждане на страницата
+        displayShortUrls();
+    </script>
+</body>
+</html>
